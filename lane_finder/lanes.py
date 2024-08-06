@@ -4,30 +4,32 @@ import matplotlib.pyplot as plt
 
 # Make coordinates
 def make_coordinates(image,line_parameters):
+    print('make line para',line_parameters)
     slope,intercept = line_parameters
     y1 = image.shape[0]
     y2 = int(y1*(3/5))
+    
     x1 = int((y1 - intercept)/slope)
     x2 = int((y2 - intercept)/slope)
     return np.array([x1,y1,x2,y2])
 
 # Average slope intercept
 def average_slope_intercept(image,lines):
-    left_fit = []
-    right_fit = []
+    left_fit, right_fit = [], [] # left fit and right fit
+     
     for line in lines:
         x1,y1,x2,y2 = line.reshape(4)
         parameters = np.polyfit((x1,x2),(y1,y2),1)
+        # print(f'parameters: {parameters}')
         slope = parameters[0]
         intercept = parameters[1]
-        if slope < 0:
-            left_fit.append((slope,intercept))
-        else:
-            right_fit.append((slope,intercept))
-    
-    # print(left_fit)
-    # print(right_fit)
 
+        if slope < 0:
+            left_fit.append((slope, intercept))
+        else:
+            right_fit.append((slope, intercept))
+    
+ 
     left_fit_average = np.average(left_fit,axis=0)
     right_fit_average = np.average(right_fit,axis=0)
     
@@ -35,6 +37,7 @@ def average_slope_intercept(image,lines):
     right_line = make_coordinates(image, right_fit_average)
 
     return np.array([left_line,right_line])
+
 
 # Canny function traces the gradient of the roads
 def canny(lane_image):
@@ -70,7 +73,8 @@ def region_of_interest(image):
     masked_image = cv2.bitwise_and(image,mask)
     return masked_image
 
-if __name__ == '__main__':
+
+def main():
     # image = cv2.imread('test_image.jpg')
     # lane_image = np.copy(image)
     # canny_image = canny(lane_image)
@@ -91,10 +95,13 @@ if __name__ == '__main__':
         averaged_lines = average_slope_intercept(frame, lines)
         line_image = display_lines(frame,averaged_lines)
         combo_image = cv2.addWeighted(frame,0.8,line_image,1,1)
-        cv2.imshow('result',combo_image)
-
-        # Numeric keyboard
-        if cv2.waitKey(3) and 0xFF == ord('q'):
+        cv2.imshow('result',combo_image) 
+        
+        if cv2.waitKey(5) and 0xFF == ord('q'): # Numeric keyboard
             break
     cap.release()
     cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()
